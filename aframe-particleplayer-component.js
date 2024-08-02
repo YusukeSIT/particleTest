@@ -371,7 +371,7 @@ THREE.BufferGeometryUtils = {
 
 			if ( ! mergedAttribute ) return null;
 
-			mergedGeometry.addAttribute( name, mergedAttribute );
+			mergedGeometry.setAttribute( name, mergedAttribute );
 
 		}
 
@@ -493,6 +493,7 @@ const OFFSCREEN_VEC3 = new THREE.Vector3(-99999, -99999, -99999);
 /**
  * Particle Player component for A-Frame.
  */
+
 AFRAME.registerComponent('particleplayer', {
   schema: {
     blending: {
@@ -692,7 +693,7 @@ AFRAME.registerComponent('particleplayer', {
         const ratio = data.img ? data.img.width / data.img.height : 1;
         tempGeometries.length = 0;
         for (let p = 0; p < this.numParticles; p++) {
-          let geometry = new THREE.PlaneBufferGeometry(
+          let geometry = new THREE.PlaneGeometry(
             0.1 * ratio * data.pscale,
             0.1 * data.pscale
           );
@@ -967,16 +968,18 @@ AFRAME.registerComponent('particleplayer', {
 });
 
 // Use triangle geometry as a helper for rotating.
+
 const tri = (function() {
   const tri = new THREE.BufferGeometry();
-
-  const vertices = new Float32Array([
-    0.0, 0.0, 0.0, // Vertex 1
-    1.0, 0.0, 0.0, // Vertex 2
-    0.0, 1.0, 0.0  // Vertex 3
-  ]);
-
-  tri.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+  const vertices = new Float32Array( [
+    0, 0, 0, // vertex 1
+    0, 0, 0,  // vertex 2 
+    0, 0, 0   // vertex 3
+  ], 3 );
+  console.log(vertices);
+	tri.setAttribute('position', vertices);
+	console.log(tri.attributes.position);
+  tri.setIndex(new THREE.BufferAttribute( new Float32Array([ 0, 1, 2 ]), 1 ));
   return tri;
 })();
 
@@ -991,71 +994,73 @@ function transformPlane(
   position,
   rotation
 ) {
-	console.log(position);
   const array = geometry.attributes.position.array;
   const index = particleIndex * NUM_PLANE_POSITIONS;
 
   // Calculate first face (0, 2, 1).
-  tri.vertices[0].set(
-    originalArray[index + 0],
-    originalArray[index + 1],
-    originalArray[index + 2]
-  );
-  tri.vertices[1].set(
-    originalArray[index + 3],
-    originalArray[index + 4],
-    originalArray[index + 5]
-  );
-  tri.vertices[2].set(
-    originalArray[index + 6],
-    originalArray[index + 7],
-    originalArray[index + 8]
-  );
+  tri.attributes.position[0] = originalArray[index + 0];
+  tri.attributes.position[1] = originalArray[index + 1];
+  tri.attributes.position[2] = originalArray[index + 2];
+  tri.attributes.position[3] = originalArray[index + 3];
+  tri.attributes.position[4] = originalArray[index + 4];
+  tri.attributes.position[5] = originalArray[index + 5];
+  tri.attributes.position[6] = originalArray[index + 6];
+  tri.attributes.position[7] = originalArray[index + 7];
+  tri.attributes.position[8] = originalArray[index + 8]; 
   if (rotation) {
     tri.rotateX(rotation.x);
     tri.rotateY(rotation.y);
     tri.rotateZ(rotation.z);
-  }
-  tri.vertices[0].add(position);
-  tri.vertices[1].add(position);
-  tri.vertices[2].add(position);
-  array[index + 0] = tri.vertices[0].x;
-  array[index + 1] = tri.vertices[0].y;
-  array[index + 2] = tri.vertices[0].z;
-  array[index + 3] = tri.vertices[1].x;
-  array[index + 4] = tri.vertices[1].y;
-  array[index + 5] = tri.vertices[1].z;
-  array[index + 6] = tri.vertices[2].x;
-  array[index + 7] = tri.vertices[2].y;
-  array[index + 8] = tri.vertices[2].z;
+  }	
+  tri.attributes.position[0] += position.x;
+  tri.attributes.position[1] += position.y;
+  tri.attributes.position[2] += position.z;
+  tri.attributes.position[3] += position.x;
+  tri.attributes.position[4] += position.y;
+  tri.attributes.position[5] += position.z;
+  tri.attributes.position[6] += position.x;
+  tri.attributes.position[7] += position.y;
+  tri.attributes.position[8] += position.z;
+  array[index + 0] = tri.attributes.position[0];
+  array[index + 1] = tri.attributes.position[1];
+  array[index + 2] = tri.attributes.position[2];
+  array[index + 3] = tri.attributes.position[3];
+  array[index + 4] = tri.attributes.position[4];
+  array[index + 5] = tri.attributes.position[5];
+  array[index + 6] = tri.attributes.position[6];
+  array[index + 7] = tri.attributes.position[7];
+  array[index + 8] = tri.attributes.position[8];
 
   // Calculate second face (2, 3, 1) just for the last vertex.
-  tri.vertices[0].set(
-    originalArray[index + 3],
-    originalArray[index + 4],
-    originalArray[index + 5]
-  );
-  tri.vertices[1].set(
-    originalArray[index + 6],
-    originalArray[index + 7],
-    originalArray[index + 8]
-  );
-  tri.vertices[2].set(
-    originalArray[index + 9],
-    originalArray[index + 10],
-    originalArray[index + 11]
-  );
+
+  tri.attributes.position[0] = originalArray[index + 3];
+  tri.attributes.position[1] = originalArray[index + 4];
+  tri.attributes.position[2] = originalArray[index + 5];
+  tri.attributes.position[3] = originalArray[index + 6];
+  tri.attributes.position[4] = originalArray[index + 7];
+  tri.attributes.position[5] = originalArray[index + 8];
+  tri.attributes.position[6] = originalArray[index + 9];
+  tri.attributes.position[7] = originalArray[index + 10];
+  tri.attributes.position[8] = originalArray[index + 11];
   if (rotation) {
     tri.rotateX(rotation.x);
     tri.rotateY(rotation.y);
     tri.rotateZ(rotation.z);
   }
-  tri.vertices[0].add(position);
-  tri.vertices[1].add(position);
-  tri.vertices[2].add(position);
-  array[index + 9] = tri.vertices[2].x;
-  array[index + 10] = tri.vertices[2].y;
-  array[index + 11] = tri.vertices[2].z;
+  tri.attributes.position[0] += position.x;
+  tri.attributes.position[1] += position.y;
+  tri.attributes.position[2] += position.z;
+  tri.attributes.position[3] += position.x;
+  tri.attributes.position[4] += position.y;
+  tri.attributes.position[5] += position.z;
+  tri.attributes.position[6] += position.x;
+  tri.attributes.position[7] += position.y;
+  tri.attributes.position[8] += position.z;
+  
+  array[index + 9] = tri.attributes.position[6];
+  array[index + 10] = tri.attributes.position[7];
+  array[index + 11] = tri.attributes.position[8];
+	
 
   geometry.attributes.position.needsUpdate = true;
 }
